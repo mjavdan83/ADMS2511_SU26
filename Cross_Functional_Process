@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ERP Cross-Functional Process Jigsaw</title>
+<style>
+  :root{
+    --blue:#0b3d91; --green:#17823b; --purple:#5b2ca0; --gold:#f4b400;
+    --bg:#f6f8fb; --card:#fff; --text:#172033;
+  }
+  body{font-family:Arial,Helvetica,sans-serif;margin:0;background:var(--bg);color:var(--text)}
+  header{padding:18px 28px;background:white;border-bottom:3px solid #dce3ef}
+  h1{margin:0;color:#0b2f6b;font-size:28px}
+  .subtitle{margin-top:6px;font-size:16px}
+  .wrap{display:grid;grid-template-columns:330px 1fr;gap:18px;padding:18px}
+  .panel{background:white;border-radius:14px;box-shadow:0 2px 12px #0001;padding:14px}
+  .bank{display:flex;flex-direction:column;gap:8px;min-height:620px}
+  .tile{background:#fff;border:2px solid #ccd7e6;border-left-width:10px;border-radius:10px;padding:10px;cursor:grab;font-weight:700;box-shadow:0 2px 5px #0001}
+  .tile small{display:block;font-weight:400;margin-top:3px}
+  .tile.blue{border-left-color:var(--blue)} .tile.green{border-left-color:var(--green)} .tile.purple{border-left-color:var(--purple)}
+  .board{display:flex;flex-direction:column;gap:16px}
+  .lane{border:3px solid;border-radius:14px;background:#fff;padding:10px}
+  .lane h2{margin:0 0 8px;text-align:center;font-size:22px}
+  .blueLane{border-color:var(--blue)} .blueLane h2{color:var(--blue)}
+  .greenLane{border-color:var(--green)} .greenLane h2{color:var(--green)}
+  .purpleLane{border-color:var(--purple)} .purpleLane h2{color:var(--purple)}
+  .zones{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+  .zone{min-height:95px;border:2px dashed #b8c4d5;border-radius:10px;background:#f8fbff;padding:7px;position:relative}
+  .zone:before{content:attr(data-label);font-size:12px;color:#60708a;display:block;margin-bottom:5px}
+  .zone.correct{border-style:solid;border-color:#16a34a;background:#f0fdf4}
+  .zone.wrong{border-style:solid;border-color:#dc2626;background:#fff1f2}
+  .zone .tile{font-size:13px;padding:7px;margin:0;border-left-width:7px}
+  .topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
+  button{background:#0b3d91;color:white;border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+  button.secondary{background:#64748b}
+  .score{font-size:18px;font-weight:700}
+  .feedback{margin-top:10px;padding:12px;border-radius:10px;background:#eef5ff;line-height:1.45}
+  .legend{font-size:13px;line-height:1.5}
+  .flow{font-size:13px;margin-top:10px;border-top:1px solid #e3e8f0;padding-top:10px}
+  @media(max-width:900px){.wrap{grid-template-columns:1fr}.zones{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>ERP Cross-Functional Process Jigsaw</h1>
+  <div class="subtitle">Drag each process step into the correct location. Learn how Sales, Warehouse, Accounting, Production, Purchasing, and Inventory work together in an ERP system like SAP.</div>
+</header>
+
+<div class="wrap">
+  <section class="panel">
+    <div class="topbar">
+      <button onclick="check()">Check Answers</button>
+      <button class="secondary" onclick="resetGame()">Reset</button>
+    </div>
+    <div class="score" id="score">Score: 0 / 17</div>
+    <div class="feedback" id="feedback">Tip: Start with the customer order. If finished goods are unavailable, production starts. If raw materials are unavailable, procurement starts.</div>
+    <h3>Jigsaw Pieces</h3>
+    <div class="bank" id="bank"></div>
+    <div class="flow">
+      <b>ERP logic:</b><br>
+      Order-to-Cash → Production → Procure-to-Pay → back to Production → Finished Goods → Shipment → Invoice → Payment
+    </div>
+  </section>
+
+  <main class="board">
+    <section class="lane blueLane">
+      <h2>ORDER FULFILLMENT PROCESS — Order-to-Cash</h2>
+      <div class="zones">
+        <div class="zone" data-id="cust" data-label="Sales"></div>
+        <div class="zone" data-id="fgcheck" data-label="Decision"></div>
+        <div class="zone" data-id="pick" data-label="Warehouse"></div>
+        <div class="zone" data-id="ship" data-label="Warehouse"></div>
+        <div class="zone" data-id="invoice" data-label="Accounting"></div>
+        <div class="zone" data-id="pay" data-label="Accounting"></div>
+      </div>
+    </section>
+
+    <section class="lane greenLane">
+      <h2>PRODUCTION PROCESS</h2>
+      <div class="zones">
+        <div class="zone" data-id="reqprod" data-label="Warehouse"></div>
+        <div class="zone" data-id="authprod" data-label="Warehouse"></div>
+        <div class="zone" data-id="rmcheck" data-label="Decision"></div>
+        <div class="zone" data-id="issue" data-label="Production"></div>
+        <div class="zone" data-id="make" data-label="Production"></div>
+        <div class="zone" data-id="storefg" data-label="Warehouse"></div>
+      </div>
+    </section>
+
+    <section class="lane purpleLane">
+      <h2>PROCUREMENT PROCESS — Procure-to-Pay</h2>
+      <div class="zones">
+        <div class="zone" data-id="req" data-label="Warehouse"></div>
+        <div class="zone" data-id="po" data-label="Purchasing"></div>
+        <div class="zone" data-id="receive" data-label="Purchasing"></div>
+        <div class="zone" data-id="inspect" data-label="Purchasing"></div>
+        <div class="zone" data-id="storerm" data-label="Warehouse"></div>
+        <div class="zone" data-id="blank" data-label="Optional empty area"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const pieces = [
+  ["cust","1. Customer Inquiry","Customer demand begins the order-to-cash process.","blue"],
+  ["fgcheck","2. Finished Goods Inventory Sufficient?","ERP checks whether finished goods are available.","blue"],
+  ["pick","3. Pick & Prepare Shipment","Warehouse prepares the order for shipping.","blue"],
+  ["ship","4. Ship Goods to Customer","Goods are shipped and inventory is updated.","blue"],
+  ["invoice","5. Generate Invoice","Accounting bills the customer.","blue"],
+  ["pay","6. Receive Payment","Customer payment closes the order-to-cash cycle.","blue"],
+  ["reqprod","1. Request Production","Warehouse triggers production when finished goods are low.","green"],
+  ["authprod","2. Authorize Production","Production order is approved in the ERP system.","green"],
+  ["rmcheck","3. Raw Materials Inventory Sufficient?","ERP checks whether raw materials are available.","green"],
+  ["issue","4. Issue Raw Materials","Materials are released to production.","green"],
+  ["make","5. Manufacture Products","Production converts materials into finished goods.","green"],
+  ["storefg","6. Store Finished Goods","Finished products return to warehouse inventory.","green"],
+  ["req","1. Create Requisition","Warehouse requests raw materials.","purple"],
+  ["po","2. Issue Purchase Order","Purchasing sends the PO to a supplier.","purple"],
+  ["receive","3. Receive Shipment","Supplier shipment arrives.","purple"],
+  ["inspect","4. Inspect & Accept","Goods are checked before acceptance.","purple"],
+  ["storerm","5. Store Raw Materials","Raw materials are stored for future production.","purple"]
+];
+
+function shuffle(a){return [...a].sort(()=>Math.random()-0.5)}
+function makeTile(p){
+  const d=document.createElement("div");
+  d.className="tile "+p[3]; d.draggable=true; d.id="tile-"+p[0]; d.dataset.id=p[0];
+  d.innerHTML=p[1]+"<small>"+p[2]+"</small>";
+  d.addEventListener("dragstart", e=> e.dataTransfer.setData("text/plain", d.id));
+  return d;
+}
+function load(){
+  const bank=document.getElementById("bank"); bank.innerHTML="";
+  shuffle(pieces).forEach(p=>bank.appendChild(makeTile(p)));
+  document.querySelectorAll(".zone").forEach(z=>{z.innerHTML=""; z.classList.remove("correct","wrong")});
+  document.getElementById("score").textContent="Score: 0 / 17";
+  document.getElementById("feedback").textContent="Tip: Start with the customer order. If finished goods are unavailable, production starts. If raw materials are unavailable, procurement starts.";
+}
+document.querySelectorAll(".zone,#bank").forEach(z=>{
+  z.addEventListener("dragover", e=>e.preventDefault());
+  z.addEventListener("drop", e=>{
+    e.preventDefault();
+    const id=e.dataTransfer.getData("text/plain");
+    const tile=document.getElementById(id);
+    if(!tile) return;
+    if(z.classList.contains("zone") && z.children.length>0) return;
+    z.appendChild(tile);
+  });
+});
+function check(){
+  let correct=0, wrong=0;
+  document.querySelectorAll(".zone").forEach(z=>{
+    z.classList.remove("correct","wrong");
+    const tile=z.querySelector(".tile");
+    if(!tile) return;
+    if(tile.dataset.id===z.dataset.id){z.classList.add("correct"); correct++;}
+    else {z.classList.add("wrong"); wrong++;}
+  });
+  document.getElementById("score").textContent=`Score: ${correct} / 17`;
+  let msg = correct===17
+    ? "Excellent. You connected the full cross-functional ERP process correctly."
+    : `You placed ${correct} correctly and ${wrong} incorrectly. Review the process logic: customer demand starts order fulfillment; inventory shortages trigger production; raw-material shortages trigger procurement.`;
+  document.getElementById("feedback").textContent=msg;
+}
+function resetGame(){load()}
+load();
+</script>
+</body>
+</html>
